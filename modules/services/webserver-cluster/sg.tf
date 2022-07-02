@@ -1,4 +1,5 @@
 resource "aws_security_group" "server" { #ASG security group which accepts requests from ALB to 80 port
+  name = "${var.cluster_name}-instance"
   ingress {
     from_port = var.server_port
     protocol = "tcp"
@@ -10,6 +11,7 @@ resource "aws_security_group" "server" { #ASG security group which accepts reque
   }
 }
 resource "aws_security_group" "alb" { #ALB security group which forwards requests from balancer 80 port to spots 80 port
+  name = "${var.cluster_name}-alb"
   ingress {
     from_port = 80
     protocol = "tcp"

@@ -5,6 +5,9 @@ provider "aws" {
 ### Call module
 module "webserver-cluster" {
   source = "../../../modules/services/webserver-cluster"
+  cluster_name = "webserver_stage"
+  db_remote_state_bucket = "aleksej-terraform-state"
+  db_remote_state_key = "stage/data-stores/mysql/terraform.tfstate"
 }
 
 ### Output retrieved from another outputs.tf in modules folder
