@@ -17,4 +17,14 @@ variable "db_remote_state_bucket" {
 
 variable "db_remote_state_key" {
   description = "The path for the database remote state in s3"
+  type = string
+}
+
+### Locals
+locals {
+  http_port = 80
+  any_port = 0
+  any_protocol = "-1"
+  tcp_protocol = "tcp"
+  all_ips = ["0.0.0.0/0"]
 }

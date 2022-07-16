@@ -20,10 +20,10 @@ data "aws_subnet_ids" "server_net" {
 resource "aws_security_group" "spots" { #ASG security group which accepts requests from ALB to 80 port
   name = "${var.cluster_name}-instance"
   ingress {
-    from_port = var.server_port
-    protocol = "tcp"
-    to_port = var.server_port
-    cidr_blocks = ["0.0.0.0/0"]
+    from_port = local.http_port
+    protocol = local.tcp_protocol
+    to_port = local.http_port
+    cidr_blocks = local.all_ips
   }
   tags = {
     Name = "terraform"
@@ -32,16 +32,16 @@ resource "aws_security_group" "spots" { #ASG security group which accepts reques
 resource "aws_security_group" "alb" { #ALB security group which forwards requests from balancer 80 port to spots 80 port
   name = "${var.cluster_name}-alb"
   ingress {
-    from_port = 80
-    protocol = "tcp"
-    to_port = var.server_port
-    cidr_blocks = ["0.0.0.0/0"]
+    from_port = local.http_port
+    protocol = local.tcp_protocol
+    to_port = local.http_port
+    cidr_blocks = local.all_ips
   }
   egress {
-    from_port = 0
-    protocol = "-1"
-    to_port = 0
-    cidr_blocks = ["0.0.0.0/0"]
+    from_port = local.any_port
+    protocol = local.any_protocol
+    to_port = local.any_port
+    cidr_blocks = local.all_ips
   }
   tags = {
     Name = "terraform"
