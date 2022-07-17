@@ -9,6 +9,12 @@ terraform {
   }
 }
 
+### IAM users
+resource "aws_iam_user" "test" {
+  name = each.value
+  for_each = toset(var.user_names)
+}
+
 ### VPC and subnets
 data "aws_vpc" "server_net" {
   default = true

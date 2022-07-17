@@ -1,4 +1,10 @@
 ### Output
+output "all_users" {
+  value = aws_iam_user.test
+}
+output "all_arns" {
+  value = values(aws_iam_user.test)[*].arn
+}
 output "alb_dns_name" {
   value = aws_lb.server_alb.dns_name
   description = "The ELB DNS name"

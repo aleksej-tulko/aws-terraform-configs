@@ -20,6 +20,12 @@ variable "db_remote_state_key" {
   type = string
 }
 
+variable "user_names" {
+  description = "Create IAM users with this names"
+  type = list(string)
+  default = ["neo", "trinity", "morpheus"]
+}
+
 ### Locals
 locals {
   http_port = 80
