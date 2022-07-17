@@ -29,25 +29,29 @@ resource "aws_security_group" "spots" { #ASG security group which accepts reques
     Name = "terraform"
   }
 }
-resource "aws_security_group" "alb" { #ALB security group which forwards requests from balancer 80 port to spots 80 port
+resource "aws_security_group" "alb" {
   name = "${var.cluster_name}-alb"
-  ingress {
-    from_port = local.http_port
-    protocol = local.tcp_protocol
-    to_port = local.http_port
-    cidr_blocks = local.all_ips
-  }
-  egress {
-    from_port = local.any_port
-    protocol = local.any_protocol
-    to_port = local.any_port
-    cidr_blocks = local.all_ips
-  }
   tags = {
     Name = "terraform"
   }
 }
-
+resource "aws_security_group_rule" "allow-http-inbound" {
+  #ALB security group which forwards requests from balancer 80 port to spots 80 port
+  type = "ingress"
+  security_group_id = aws_security_group.alb.id
+  from_port = local.http_port
+  protocol = local.tcp_protocol
+  to_port = local.http_port
+  cidr_blocks = local.all_ips
+}
+resource "aws_security_group_rule" "allow-http-outbound" {
+  type = "egress"
+  security_group_id = aws_security_group.alb.id
+  from_port = local.any_port
+  protocol = local.any_protocol
+  to_port = local.any_port
+  cidr_blocks = local.all_ips
+}
 ### ALB
 resource "aws_lb" "server_alb" {
   name = "server-load-balancer"
@@ -132,7 +136,7 @@ data "terraform_remote_state" "db" {
 }
 # Get user data
 data "template_file" "user-data" {
-  template = file("../../../modules/services/webserver-cluster/user-data.sh")
+  template = file("${path.module}/user-data.sh")
   vars = {
     db_address = data.terraform_remote_state.db.outputs.address
     db_port= data.terraform_remote_state.db.outputs.port

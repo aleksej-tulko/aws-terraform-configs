@@ -8,6 +8,14 @@ module "webserver-cluster" {
   db_remote_state_bucket = "aleksej-terraform-state"
   db_remote_state_key = "stage/data-stores/mysql/terraform.tfstate"
 }
+resource "aws_security_group_rule" "allow-test-inbound" {
+  type = "ingress"
+  security_group_id = module.webserver-cluster.alb_security_group_id
+  from_port = 12345
+  protocol = "tcp"
+  to_port = 12345
+  cidr_blocks = ["0.0.0.0/0"]
+}
 ### Output retrieved from another outputs.tf in modules folder
 output "alb_dns_name" {
   value = module.webserver-cluster.alb_dns_name

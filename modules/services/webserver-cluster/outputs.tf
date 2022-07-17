@@ -11,3 +11,6 @@ output "db_port" {
   value = data.terraform_remote_state.db.outputs.port
   description = "Port of the DB"
 }
+output "alb_security_group_id" {
+  value = aws_security_group.alb.id
+}
