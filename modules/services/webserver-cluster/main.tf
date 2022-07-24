@@ -130,6 +130,14 @@ resource "aws_autoscaling_group" "server" {
     propagate_at_launch = true
     value = "terraform_server"
   }
+  dynamic "tag" {
+    for_each = var.custom_tags
+    content {
+      key = tag.key
+      value = tag.value
+      propagate_at_launch = true
+    }
+  }
 }
 # Read DB
 data "terraform_remote_state" "db" {

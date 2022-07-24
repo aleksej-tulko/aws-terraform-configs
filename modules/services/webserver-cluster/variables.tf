@@ -26,6 +26,12 @@ variable "user_names" {
   default = ["neo", "trinity", "morpheus"]
 }
 
+variable "custom_tags" {
+  description = "Custom tags for spots"
+  type = map(string)
+  default = {}
+}
+
 ### Locals
 locals {
   http_port = 80

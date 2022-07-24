@@ -7,6 +7,11 @@ module "webserver-cluster" {
   cluster_name = "webserver_stage"
   db_remote_state_bucket = "aleksej-terraform-state"
   db_remote_state_key = "stage/data-stores/mysql/terraform.tfstate"
+
+  custom_tags = {
+    Owner = "aleksej"
+    DeployedBy = "terraform"
+  }
 }
 resource "aws_security_group_rule" "allow-test-inbound" {
   type = "ingress"
