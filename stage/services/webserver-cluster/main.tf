@@ -38,6 +38,7 @@ output "all_users" {
   value = module.webserver-cluster.all_users
   description = "List all IAM users"
 }
+
 output "all_arns" {
   value = module.webserver-cluster.all_arns
   description = "List all arns"
