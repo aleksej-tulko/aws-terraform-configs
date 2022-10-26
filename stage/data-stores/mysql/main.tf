@@ -1,13 +1,13 @@
 provider "aws" {
-  region = "us-east-2"
+  region = "eu-central-1"
 }
 
 terraform {
   backend "s3" {
-    bucket = "aleksej-terraform-state"
+    bucket = "aws-lock-terraform-state"
     key = "stage/data-stores/mysql/terraform.tfstate"
-    region = "us-east-2"
-    dynamodb_table = "aleksej-terraform-state"
+    region = "eu-central-1"
+    dynamodb_table = "terraform-state"
     encrypt = true
   }
 }

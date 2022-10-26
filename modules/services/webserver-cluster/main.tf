@@ -1,10 +1,13 @@
+provider "aws" {
+  region = "eu-central-1"
+}
 #Save state in S3 bucket
 terraform {
   backend "s3" {
-    bucket = "aleksej-terraform-state"
+    bucket = "aws-lock-terraform-state"
     key = "stage/services/webserver-cluster/terraform.tfstate"
-    region = "us-east-2"
-    dynamodb_table = "aleksej-terraform-state"
+    region = "eu-central-1"
+    dynamodb_table = "terraform-state"
     encrypt = true
   }
 }
@@ -108,7 +111,7 @@ resource "aws_lb_target_group" "asg" {
 
 ### ASG
 resource "aws_launch_configuration" "server" {
-  image_id = "ami-0c55b159cbfafe1f0"
+  image_id = "ami-065dd44a56747a530"
   instance_type = "t2.micro"
   security_groups = [aws_security_group.spots.id]
 
@@ -145,7 +148,7 @@ data "terraform_remote_state" "db" {
   config = {
     bucket = var.db_remote_state_bucket
     key = var.db_remote_state_key
-    region = "us-east-2"
+    region = "eu-central-1"
   }
 }
 # Get user data
