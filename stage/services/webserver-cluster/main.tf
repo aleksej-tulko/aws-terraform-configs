@@ -1,11 +1,11 @@
 provider "aws" {
-  region = "eu-central-1"
+  region = "us-east-1"
 }
 ### Call module
 module "webserver-cluster" {
   source = "../../../modules/services/webserver-cluster"
   cluster_name = "webserver_stage"
-  db_remote_state_bucket = "aws-lock-terraform-state"
+  db_remote_state_bucket = "aws-block-terraform-state"
   db_remote_state_key = "stage/data-stores/mysql/terraform.tfstate"
 
   custom_tags = {
@@ -16,9 +16,9 @@ module "webserver-cluster" {
 resource "aws_security_group_rule" "allow-test-inbound" {
   type = "ingress"
   security_group_id = module.webserver-cluster.alb_security_group_id
-  from_port = 12346
+  from_port = 12345
   protocol = "tcp"
-  to_port = 12346
+  to_port = 12345
   cidr_blocks = ["0.0.0.0/0"]
 }
 ### Output retrieved from another outputs.tf in modules folder

@@ -1,13 +1,13 @@
 provider "aws" {
-  region = "eu-central-1"
+  region = "us-east-1"
 }
 #Save state in S3 bucket
 terraform {
   backend "s3" {
-    bucket = "aws-lock-terraform-state"
+    bucket = "aws-block-terraform-state"
     key = "stage/services/webserver-cluster/terraform.tfstate"
-    region = "eu-central-1"
-    dynamodb_table = "terraform-state"
+    region = "us-east-1"
+    dynamodb_table = "aws-playground-terraform-state"
     encrypt = true
   }
 }
@@ -111,7 +111,7 @@ resource "aws_lb_target_group" "asg" {
 
 ### ASG
 resource "aws_launch_configuration" "server" {
-  image_id = "ami-065dd44a56747a530"
+  image_id = "ami-0574da719dca65348"
   instance_type = "t2.micro"
   security_groups = [aws_security_group.spots.id]
 
@@ -121,6 +121,7 @@ resource "aws_launch_configuration" "server" {
   }
 }
 resource "aws_autoscaling_group" "server" {
+  depends_on = [aws_lb.server_alb]
   launch_configuration = aws_launch_configuration.server.name
   vpc_zone_identifier = data.aws_subnet_ids.server_net.ids
   target_group_arns = [aws_lb_target_group.asg.arn] #integration beteween ASG and ALB. A set of aws_alb_target_group ARNs, for use with Application or Network Load Balancing.
@@ -148,7 +149,7 @@ data "terraform_remote_state" "db" {
   config = {
     bucket = var.db_remote_state_bucket
     key = var.db_remote_state_key
-    region = "eu-central-1"
+    region = "us-east-1"
   }
 }
 # Get user data
