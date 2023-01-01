@@ -7,6 +7,8 @@ module "webserver-cluster" {
   cluster_name = "webserver_stage"
   db_remote_state_bucket = "aws-block-terraform-state"
   db_remote_state_key = "stage/data-stores/mysql/terraform.tfstate"
+  enable_autoscaling = true
+  enable_new_user_data = false
 
   custom_tags = {
     Owner = "aleksej"
@@ -38,8 +40,11 @@ output "all_users" {
   value = module.webserver-cluster.all_users
   description = "List all IAM users"
 }
-
 output "all_arns" {
   value = module.webserver-cluster.all_arns
   description = "List all arns"
+}
+output "map_map" {
+  value = module.webserver-cluster.map_map
+  description = "page 177"
 }

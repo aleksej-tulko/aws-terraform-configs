@@ -20,3 +20,6 @@ output "db_port" {
 output "alb_security_group_id" {
   value = aws_security_group.alb.id
 }
+output "map_map" {
+  value = {for name, role in var.hero_thousand_faces : name => role}
+}

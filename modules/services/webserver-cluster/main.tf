@@ -18,6 +18,38 @@ resource "aws_iam_user" "test" {
   for_each = toset(var.user_names)
 }
 
+resource "aws_iam_policy" "cloudwatch_read_only" {
+  name = "cloudwatch_read_only"
+  policy = data.aws_iam_policy_document.cloudwatch_read_only.json
+}
+
+resource "aws_iam_policy" "cloudwatch_full_access" {
+  name = "cloudwatch_full_access"
+  policy = data.aws_iam_policy_document.cloudwatch_full_access.json
+}
+
+data "aws_iam_policy_document" "cloudwatch_read_only" {
+  statement {
+    effect = "Allow"
+    actions = [
+    "cloudwatch:Describe",
+    "cloudwatch:Get*",
+    "cloudwatch:List*"
+    ]
+    resources = ["*"]
+  }
+}
+
+data "aws_iam_policy_document" "cloudwatch_full_access" {
+  statement {
+    effect = "Allow"
+    actions = [
+      "cloudwatch:*"
+    ]
+    resources = ["*"]
+  }
+}
+
 ### VPC and subnets
 data "aws_vpc" "server_net" {
   default = true
@@ -110,19 +142,28 @@ resource "aws_lb_target_group" "asg" {
 }
 
 ### ASG
-resource "aws_launch_configuration" "server" {
-  image_id = "ami-0574da719dca65348"
-  instance_type = "t2.micro"
-  security_groups = [aws_security_group.spots.id]
-
-  user_data = data.template_file.user-data.rendered
-  lifecycle {
-    create_before_destroy = true
-  }
+#resource "aws_launch_configuration" "server" {
+#  image_id = "ami-0574da719dca65348"
+#  instance_type = "t2.micro"
+#  security_groups = [aws_security_group.spots.id]
+#
+#  user_data = data.template_file.user-data.rendered
+#  lifecycle {
+#    create_before_destroy = true
+#  }
+#}
+resource "aws_autoscaling_schedule" "scale_out_during_business_hours" {
+  count = var.enable_autoscaling ? 1 : 0
+  autoscaling_group_name = aws_autoscaling_group.server.name
+  scheduled_action_name  = "${var.cluster_name}-scale-out-during-business-hours"
+  max_size = 1
+  min_size = 0
+  desired_capacity = 1
+  recurrence = "0 9 * * *"
 }
 resource "aws_autoscaling_group" "server" {
   depends_on = [aws_lb.server_alb]
-  launch_configuration = aws_launch_configuration.server.name
+  launch_configuration = aws_launch_configuration.user-data.id
   vpc_zone_identifier = data.aws_subnet_ids.server_net.ids
   target_group_arns = [aws_lb_target_group.asg.arn] #integration beteween ASG and ALB. A set of aws_alb_target_group ARNs, for use with Application or Network Load Balancing.
   health_check_type = "ELB"
@@ -154,10 +195,68 @@ data "terraform_remote_state" "db" {
 }
 # Get user data
 data "template_file" "user-data" {
+  count = var.enable_new_user_data ? 0 : 1
   template = file("${path.module}/user-data.sh")
   vars = {
     db_address = data.terraform_remote_state.db.outputs.address
     db_port= data.terraform_remote_state.db.outputs.port
     server_port = var.server_port
   }
+}
+
+data "template_file" "user-data-new" {
+  count = var.enable_new_user_data ? 1 : 0
+  template = file("${path.module}/user-data-new.sh")
+  vars = {
+    server_port = var.server_port
+  }
+}
+
+resource "aws_launch_configuration" "user-data" {
+  image_id = "ami-0574da719dca65348"
+  instance_type = var.instance_type
+  security_groups = [aws_security_group.spots.id]
+
+  user_data = (
+    length(data.template_file.user-data[*]) > 0
+      ? data.template_file.user-data[0].rendered
+      : data.template_file.user-data-new[0].rendered
+    )
+
+  lifecycle {
+    create_before_destroy = true
+  }
+}
+
+# Cloudwatch metrics
+
+resource "aws_cloudwatch_metric_alarm" "high_cpu_utilization" {
+  alarm_name = "${var.cluster_name}-high-cpu-utilization"
+  namespace = "AWS/EC2"
+  metric_name = "CPUUtilization"
+  dimensions = {
+    AutoScalingGroupName = aws_autoscaling_group.server.name
+  }
+  comparison_operator = "GreaterThanThreshold"
+  evaluation_periods  = 1
+  period = 300
+  statistic = "Average"
+  threshold = 90
+  unit = "Percent"
+}
+
+resource "aws_cloudwatch_metric_alarm" "low_cpu_credit_balance" {
+  count = format("%.2s", var.instance_type) == "t2" ? 1 : 0
+  alarm_name = "${var.cluster_name}-low-cpu-credit-balance"
+  namespace = "AWS/EC2"
+  metric_name = "CPUCreditBalance"
+  dimensions = {
+    AutoScalingGroupName = aws_autoscaling_group.server.name
+  }
+  comparison_operator = "LessThanThreshold"
+  evaluation_periods  = 1
+  period = 300
+  statistic = "Minimum"
+  threshold = 10
+  unit = "Count"
 }

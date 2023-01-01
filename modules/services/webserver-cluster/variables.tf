@@ -1,4 +1,10 @@
 ### Variables
+variable "instance_type" {
+  description = "Instance type"
+  type = string
+  default = "t2.micro"
+}
+
 variable "server_port" {
   description = "HTTP port"
   type = number
@@ -26,10 +32,26 @@ variable "user_names" {
   default = ["neo", "trinity", "morpheus"]
 }
 
+variable "give_neo_full_cloudwatch_acccess" {
+  description = "If true, Neo will get full access to Cloudwatch"
+  type = bool
+  default = true
+}
+
+variable "enable_new_user_data" {
+  description = "If true, use the new script"
+  type = bool
+}
+
 variable "custom_tags" {
   description = "Custom tags for spots"
   type = map(string)
   default = {}
+}
+
+variable "enable_autoscaling" {
+  description = "If set to true, enable autoscaling"
+  type = bool
 }
 
 ### Locals
@@ -39,4 +61,15 @@ locals {
   any_protocol = "-1"
   tcp_protocol = "tcp"
   all_ips = ["0.0.0.0/0"]
+}
+
+#page 177
+variable "hero_thousand_faces" {
+  description = "map"
+  type = map(string)
+  default = {
+    neo = "hero"
+    trinity = "love interest"
+    morpheus = "mentor"
+  }
 }
