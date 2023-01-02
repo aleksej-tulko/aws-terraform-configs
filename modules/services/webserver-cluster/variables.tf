@@ -43,6 +43,18 @@ variable "enable_new_user_data" {
   type = bool
 }
 
+variable ami {
+  description = "The AMI to run in the cluster"
+  default = "ami-0574da719dca65348"
+  type = string
+}
+
+variable server_text {
+  description = "The text the webserver should run"
+  default = "Hello, World"
+  type = string
+}
+
 variable "custom_tags" {
   description = "Custom tags for spots"
   type = map(string)
