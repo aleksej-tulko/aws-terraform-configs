@@ -11,12 +11,15 @@ terraform {
     encrypt = true
   }
 }
-# Read DB
-data "terraform_remote_state" "db" {
-  backend = "s3"
-  config = {
-    bucket = var.db_remote_state_bucket
-    key = var.db_remote_state_key
-    region = "us-east-1"
-  }
+
+module "hello_world_app" {
+  source = "../app"
+  server_text = "Sosi"
+  environment = "stage"
+  db_remote_state_bucket = "aws-block-terraform-state"
+  db_remote_state_key = "stage/data-stores/mysql/terraform.tfstate"
+  instance_type = "t2.micro"
+  min_size = 2
+  max_size = 2
+  enable_autoscaling = false
 }
