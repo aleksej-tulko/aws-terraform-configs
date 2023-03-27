@@ -26,7 +26,7 @@ resource "aws_autoscaling_schedule" "scale_out_during_night_hours" {
   max_size = 0
   min_size = 0
   desired_capacity = 0
-  recurrence = "0 17 * * *"
+  recurrence = "0 18 * * *"
 }
 
 resource "aws_autoscaling_group" "server" {

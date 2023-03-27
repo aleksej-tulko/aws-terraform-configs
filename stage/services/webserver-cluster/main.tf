@@ -11,9 +11,9 @@ terraform {
     encrypt = true
   }
 }
-
 module "hello_world_app" {
   source = "../../../modules/services/app"
+#  source = "git@github.com:aleksej-tulko/aws-terraform-configs.git//modules/services/app?ref=v0.0.5"
   server_text = "Sosi"
   environment = "stage"
   db_remote_state_bucket = "aws-block-terraform-state"
@@ -21,5 +21,5 @@ module "hello_world_app" {
   instance_type = "t2.micro"
   min_size = 2
   max_size = 2
-  enable_autoscaling = false
+  enable_autoscaling = true
 }
