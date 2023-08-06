@@ -22,4 +22,9 @@ module "hello_world_app" {
   min_size = 2
   max_size = 2
   enable_autoscaling = true
+  enable_new_user_data = true
+  custom_tags = {
+    Owner = "aleksej.tulko"
+    DeployedBy = "terraform"
+  }
 }

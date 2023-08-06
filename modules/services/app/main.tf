@@ -3,7 +3,11 @@ module "asg" {
 
   cluster_name  = "hello-world-${var.environment}"
   ami           = var.ami
-  user_data     = data.template_file.user_data.rendered
+  user_data     = (
+    length(data.template_file.user_data[*]) > 0
+      ? data.template_file.user_data[0].rendered
+      : data.template_file.new-user_data[0].rendered
+  )
   instance_type = var.instance_type
 
   min_size           = var.min_size
@@ -34,6 +38,7 @@ data "terraform_remote_state" "db" {
 }
 
 data "template_file" "user_data" {
+  count = var.enable_new_user_data ? 0 : 1
   template = file("${path.module}/user-data.sh")
 
   vars = {
@@ -44,9 +49,21 @@ data "template_file" "user_data" {
   }
 }
 
+data "template_file" "new-user_data" {
+  count = var.enable_new_user_data ? 1 : 0
+  template = file("${path.module}/new-user-data.sh")
+
+  vars = {
+    server_port = var.server_port
+  }
+}
+
 resource "aws_lb_listener_rule" "asg" {
+  tags = {
+    Name = "Bebra"
+  }
   listener_arn = module.alb.alb_http_listener_arn
-  priority = 100
+  priority = 50
   action {
     type = "forward"
     target_group_arn = aws_lb_target_group.asg.arn

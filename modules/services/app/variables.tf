@@ -9,6 +9,11 @@ variable "user_data" {
   default     = null
 }
 
+variable "enable_new_user_data" {
+  description = "If set to true, use new user data"
+  type = bool
+}
+
 variable "min_size" {
   description = "The minimum number of EC2 Instances in the ASG"
   type        = number
